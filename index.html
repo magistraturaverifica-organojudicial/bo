@@ -210,50 +210,48 @@
         </div>
     </div>
 
-    <!-- CARGA DINÁMICA DEL JS SEGÚN LA URL + LÓGICA DE ARRASTRE -->
+    <!-- CARGA DINÁMICA DESDE /datos/ USANDO PARÁMETRO 'x' EN LA URL -->
     <script>
-        // 1. Obtener el nombre del archivo JS desde el parámetro 'data' o 'js'
+        // 1. Obtener el valor del parámetro 'x' en la URL (por defecto carga 'datos1')
         const urlParams = new URLSearchParams(window.location.search);
-        const archivoJS = urlParams.get('data') || urlParams.get('js') || 'datos1';
+        const archivoJS = urlParams.get('x') || 'datos1';
 
-        // 2. Crear dinámicamente la etiqueta <script>
+        // 2. Crear dinámicamente el script apuntando a ./datos/[archivoJS].js
         const scriptData = document.createElement('script');
-        scriptData.src = `./${archivoJS}.js`;
+        scriptData.src = `./datos/${archivoJS}.js`;
 
-        // 3. Cuando el script cargue, renderizar los datos
+        // 3. Al cargar el archivo JS, actualizar el HTML con los datos recibidos
         scriptData.onload = () => {
             if (window.datosActuales) {
                 const datos = window.datosActuales;
 
-                // Asignación de variables al HTML
                 document.getElementById("val-codigo").textContent = datos.codigo || "";
                 document.getElementById("val-inicio").textContent = datos.inicio || "";
                 document.getElementById("val-fin").textContent = datos.fin || "";
                 
-                // Formatear la imagen (si empieza con http/https o si es relativa)
+                // Formatear la ruta de la imagen según corresponda
                 const rutaImagen = datos.imagen.startsWith('http') ? datos.imagen : `./${datos.imagen}`;
                 document.getElementById("val-imagen").src = rutaImagen;
 
-                // Actualizar el valor del input de búsqueda
+                // Actualizar valor en el buscador
                 const inputBusqueda = document.getElementById("input-busqueda");
                 if (inputBusqueda) {
                     inputBusqueda.value = datos.codigo || "";
                 }
             } else {
-                console.error("El archivo cargó pero no tiene definido 'window.datosActuales'");
+                console.error("El archivo JS cargó, pero no definió la variable 'window.datosActuales'");
             }
         };
 
         scriptData.onerror = () => {
-            alert(`No se pudo cargar el archivo de datos: ./${archivoJS}.js`);
+            alert(`No se pudo encontrar el archivo de datos: ./datos/${archivoJS}.js`);
         };
 
-        // Inyectar el script en la página
+        // Insertar la etiqueta <script> en el documento
         document.head.appendChild(scriptData);
 
-        // 4. Funcionalidades adicionales (Limpieza de input y Arrastre del visor)
+        // 4. Manejo de eventos de la página y scroll del visor
         document.addEventListener("DOMContentLoaded", function() {
-            // Botón para limpiar campo
             const inputBusqueda = document.getElementById("input-busqueda");
             const btnClear = document.getElementById("btn-clear");
             if (btnClear && inputBusqueda) {
@@ -262,7 +260,7 @@
                 });
             }
 
-            // Arrastre suave con el ratón/mouse para computadoras
+            // Arrastre con el mouse para el visor de la imagen
             const visor = document.getElementById('visor');
             let isDown = false;
             let startX, startY, scrollLeft, scrollTop;
